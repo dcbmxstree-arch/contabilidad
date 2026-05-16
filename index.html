@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>MULTIESTUDIOS | Tutor Inteligente para Contabilidad y Auditoría - Policía Nacional</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f6f9; color: #333; }
+
+    /* Pantalla de acceso */
+    .access-screen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #004d40, #00695c);
+      position: relative;
+    }
+    .access-card {
+      background: white; padding: 2rem 2rem 1.5rem; border-radius: 1.2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      text-align: center; width: 90%; max-width: 480px;
+    }
+    .access-card h1 { color: #004d40; font-size: 2.3rem; margin-bottom: 0.25rem; letter-spacing: 1px; }
+    .access-card .sub { color: #00695c; font-weight: 600; font-size: 1rem; margin-bottom: 0.4rem; }
+    .access-card .lema { color: #555; font-style: italic; margin-bottom: 1.8rem; font-size: 0.85rem; border-top: 1px solid #ddd; padding-top: 0.75rem; }
+    .access-card select, .access-card input {
+      width: 100%; padding: 0.8rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .btn {
+      background: #004d40; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 0.5rem;
+      font-size: 1rem; cursor: pointer; transition: background 0.3s; width: 100%; margin-top: 0.5rem;
+    }
+    .btn:hover { background: #00695c; }
+    .btn.secondary { background: #607d8b; }
+    .btn.secondary:hover { background: #455a64; }
+    .error-msg { color: #c62828; margin-top: 0.5rem; font-weight: bold; }
+    .footer-note { margin-top: 1.8rem; font-size: 0.7rem; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 1rem; }
+
+    /* Panel principal */
+    .main-panel { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .header h2 { color: #004d40; }
+    .logout-btn { background: #b71c1c; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 0.3rem; cursor: pointer; }
+    .section { background: white; border-radius: 0.8rem; padding: 1.8rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .section h3 { color: #004d40; margin-bottom: 1rem; border-bottom: 2px solid #004d40; padding-bottom: 0.4rem; }
+    .temario-list { max-height: 400px; overflow-y: auto; padding: 0.5rem; background: #fafafa; border-radius: 0.4rem; }
+    .temario-item { padding: 0.7rem; border-bottom: 1px solid #e0e0e0; cursor: pointer; }
+    .temario-item:hover { background: #e0f2f1; }
+    textarea { width: 100%; height: 200px; padding: 0.8rem; border: 1px solid #ccc; border-radius: 0.5rem; resize: vertical; }
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+    .btn-group .btn { width: auto; }
+    pre { white-space: pre-wrap; background: #f5f5f5; padding: 1rem; border-radius: 0.5rem; font-family: 'Segoe UI', monospace; font-size: 0.9rem; }
+    .loading { text-align: center; color: #004d40; margin: 1rem 0; }
+
+    /* Modal para caso de muestra */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000;
+    }
+    .modal-content {
+      background: white; max-width: 650px; width: 90%; border-radius: 1rem; padding: 1.5rem;
+      max-height: 80vh; overflow-y: auto; position: relative;
+    }
+    .modal-content h3 { color: #004d40; margin-bottom: 1rem; }
+    .modal-content .close-modal {
+      position: absolute; top: 10px; right: 15px; font-size: 1.8rem; cursor: pointer; color: #888;
+    }
+    .modal-content .close-modal:hover { color: #000; }
+
+    /* WhatsApp flotante */
+    .whatsapp-float {
+      position: fixed; bottom: 20px; right: 20px; background-color: #25D366; color: white;
+      width: 60px; height: 60px; border-radius: 50%; text-align: center; font-size: 30px;
+      line-height: 60px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100;
+      transition: transform 0.2s; text-decoration: none;
+    }
+    .whatsapp-float:hover { transform: scale(1.05); background-color: #128C7E; }
+  </style>
+</head>
+<body>
+
+<!-- MODAL PARA CASO DE MUESTRA -->
+<div id="sampleModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeSampleModal()">&times;</span>
+    <h3>📘 Caso práctico de muestra (Contabilidad y Auditoría)</h3>
+    <div id="sampleCaseContent"></div>
+  </div>
+</div>
+
+<!-- PANTALLA DE ACCESO -->
+<div id="accessScreen" class="access-screen">
+  <div class="access-card">
+    <h1>MULTIESTUDIOS</h1>
+    <div class="sub">Centro de Educación Continua</div>
+    <div class="lema">Tutor Inteligente para Postulantes a Especialistas de la Policía Nacional<br>en Contabilidad y Auditoría</div>
+
+    <input type="text" id="cedulaInput" placeholder="Número de cédula" />
+    <select id="carreraSelect">
+      <option value="">Seleccione su especialidad</option>
+      <option>Contabilidad y Auditoría</option>
+    </select>
+    <button class="btn" onclick="login()">Ingresar</button>
+    <button class="btn secondary" onclick="showSampleCase()" style="margin-top: 0.8rem;">Ver caso práctico de muestra</button>
+    <div id="loginError" class="error-msg"></div>
+    <div class="footer-note">Powered by Physics – 0995324419 | 2026</div>
+  </div>
+</div>
+
+<!-- PANEL PRINCIPAL -->
+<div id="mainPanel" class="main-panel">
+  <div class="header">
+    <h2>Panel del Aspirante – <span id="careerDisplay"></span></h2>
+    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <div class="section">
+    <h3>Temario de 50 temas – <span id="careerTemarioTitle"></span></h3>
+    <input type="text" id="searchTema" placeholder="Buscar tema..." style="width:100%; padding:0.5rem; margin-bottom:0.5rem;" onkeyup="filterTemas()" />
+    <div id="temarioContainer" class="temario-list"></div>
+  </div>
+
+  <div class="section">
+    <h3>Caso Práctico</h3>
+    <div id="caseContent" class="case-box">Presione "Crear caso práctico" para comenzar.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="loadCaseFromBank()">Crear caso práctico (banco)</button>
+      <button class="btn secondary" onclick="generateCaseWithAI()">Nuevo caso con IA</button>
+    </div>
+    <div id="caseLoading" class="loading" style="display:none;">Generando caso, por favor espere...</div>
+  </div>
+
+  <div class="section">
+    <h3>Tu Respuesta</h3>
+    <textarea id="userAnswer" placeholder="Escribe aquí tu respuesta técnica detallada..."></textarea>
+  </div>
+
+  <div class="section">
+    <h3>Solución y Retroalimentación</h3>
+    <div class="btn-group">
+      <button class="btn" onclick="showModelAnswer()">Ver respuesta técnica</button>
+      <button class="btn secondary" onclick="reviewMyAnswer()">Revisar mi respuesta (IA)</button>
+    </div>
+    <div id="modelAnswerBox" class="model-answer-box" style="display:none;">
+      <h4>Respuesta técnica:</h4>
+      <div id="modelAnswerContent"></div>
+    </div>
+    <div id="feedbackBox" class="feedback-box" style="display:none;">
+      <h4>Evaluación de tu respuesta:</h4>
+      <div id="feedbackContent"></div>
+    </div>
+    <div id="feedbackLoading" class="loading" style="display:none;">Analizando tu respuesta, espera unos segundos...</div>
+  </div>
+</div>
+
+<!-- BOTÓN WHATSAPP FLOTANTE -->
+<a href="https://wa.me/593996328491" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
+  💬
+</a>
+
+<script>
+  // ==================== CONFIGURACIÓN API ====================
+  const API_KEY = 'sk-044520a24cfe4709b946c01cf2a3dcf6';
+  const API_URL = 'https://api.deepseek.com/v1/chat/completions';
+  const MODEL = 'deepseek-chat';
+
+  // ==================== USUARIOS AUTORIZADOS (prueba) ====================
+  const ALLOWED_USERS = [
+    { cedula: '1711111111', carrera: 'Contabilidad y Auditoría' },
+    { cedula: '1712222222', carrera: 'Contabilidad y Auditoría' },
+    { cedula: '1710280942', carrera: 'Contabilidad y Auditoría' }
+  ];
+
+  // ==================== TEMARIO COMPLETO (50 temas) ====================
+  const TEMARIOS = {
+    'Contabilidad y Auditoría': [
+      "1. Contabilidad gubernamental y el plan de cuentas del sector público ecuatoriano.",
+      "2. Principios de contabilidad generalmente aceptados en Ecuador (PCGA) y su aplicación en la Policía.",
+      "3. Normas Internacionales de Contabilidad para el Sector Público (NICSP) y su adopción en Ecuador.",
+      "4. Registro de ingresos y gastos en una entidad policial: cédula presupuestaria y partidas.",
+      "5. El presupuesto general del Estado y la asignación a la Policía Nacional: etapas y modificaciones.",
+      "6. Control interno en la gestión financiera de unidades policiales (COSO y normas de control interno de la Contraloría).",
+      "7. Auditoría gubernamental: fases y tipos según la Contraloría General del Estado.",
+      "8. Examen especial a la ejecución presupuestaria de un comando provincial.",
+      "9. Auditoría financiera de cuentas bancarias y conciliaciones en destacamentos.",
+      "10. Auditoría de cumplimiento de la LOSNCP en la contratación de bienes y servicios.",
+      "11. Evaluación del sistema de control interno en el ciclo de nómina del personal policial.",
+      "12. Pruebas sustantivas y de cumplimiento en auditoría de adquisiciones de uniformes y equipos.",
+      "13. Informe de auditoría con indicios de responsabilidad administrativa y civil culposa.",
+      "14. Técnicas de muestreo estadístico en auditoría de inventarios de armería.",
+      "15. Indicadores de gestión financiera para unidades policiales (eficiencia, eficacia, economía).",
+      "16. La LOSNCP y su reglamento: principios de transparencia, igualdad, concurrencia y publicidad.",
+      "17. Procedimientos de contratación pública: ínfima cuantía, menor cuantía, cotización y licitación.",
+      "18. Evaluación de ofertas y selección de proveedores con criterios de costo y calidad.",
+      "19. Fiscalización de contratos de obra y servicios en la Policía: rol del administrador de contrato.",
+      "20. Contratación por emergencia en la Policía Nacional: requisitos y controles posteriores.",
+      "21. Gestión de bienes de larga duración en el sector público: registro, depreciación y baja.",
+      "22. Conciliación de inventarios físicos de vehículos policiales con registros contables.",
+      "23. Responsabilidades del custodio de bienes en un comando policial (acorde a la Contraloría).",
+      "24. Examen especial a las transferencias de recursos a destacamentos rurales.",
+      "25. Auditoría de caja chica y fondos rotativos en unidades operativas.",
+      "26. Evaluación de riesgos de corrupción en el área de compras públicas policiales.",
+      "27. Cumplimiento de la normativa de control de combustibles y lubricantes (flota policial).",
+      "28. Revisión de viáticos y gastos de viaje del personal en comisión de servicios.",
+      "29. Análisis de cuentas por cobrar de multas y especies valoradas.",
+      "30. Proceso de determinación de responsabilidades civiles y administrativas según la Ley de la Contraloría.",
+      "31. Control previo, concurrente y posterior en la administración policial.",
+      "32. Auditoría de sistemas informáticos financieros (e-SIGEF, SINFIP, etc.).",
+      "33. Evaluación de la legalidad de las órdenes de pago y comprobantes de egreso.",
+      "34. Análisis de la deuda flotante y cuentas por pagar en un comando provincial.",
+      "35. Auditoría forense en la detección de desvío de fondos en la adquisición de repuestos.",
+      "36. Aplicación de las NICSP en la presentación de estados financieros institucionales.",
+      "37. Arqueo de fondos de la tesorería de una unidad: procedimiento y papeles de trabajo.",
+      "38. Verificación de la legalidad de las retenciones en la fuente y del IVA en las compras.",
+      "39. Evaluación del plan anual de contrataciones (PAC) institucional y su cumplimiento.",
+      "40. Auditoría de la gestión de recursos humanos: contratos, horas extras y rol de pagos.",
+      "41. Informe de auditoría operativa sobre el mantenimiento de cuarteles.",
+      "42. Análisis de la propiedad, planta y equipo (activos fijos) en los estados financieros policiales.",
+      "43. Examen de los registros de ingresos por tasas y derechos (servicios especiales de la Policía).",
+      "44. Conciliación de valores recaudados por matriculación y revisión vehicular (con ANT).",
+      "45. Auditoría de los procesos de baja de bienes y remate de chatarra.",
+      "46. Metodología para evaluar el riesgo de auditoría en un comando distrital.",
+      "47. Papeles de trabajo: índices, marcas y referencias según las normas de auditoría gubernamental.",
+      "48. Ética del auditor público y código de conducta de la Contraloría.",
+      "49. Control de calidad en las firmas de auditoría que evalúan a la Policía (NICC 1, ISQC 1).",
+      "50. Aplicación de las Normas de Auditoría Gubernamental (NAG) en el examen de balances policiales."
+    ]
+  };
+
+  // ==================== CASO PRECARGADO ====================
+  const CASOS_BANK = {
+    'Contabilidad y Auditoría': {
+      enunciado: "Usted es auditor de la Contraloría General del Estado asignado a la Dirección de Logística de la Policía Nacional. Se detectaron presuntos sobreprecios en la adquisición de 200 chalecos antibalas. La compra se realizó mediante procedimiento de menor cuantía. Los expedientes presentan tres cotizaciones, pero dos de ellas no cumplen los requisitos mínimos. Además, el pago se realizó antes de la entrega total. Su tarea es planificar un examen especial y emitir conclusiones preliminares, aplicando la LOSNCP y las normas de control interno.",
+      preguntas: [
+        "1. Identifique las posibles irregularidades en el proceso de contratación y pago, señalando los principios de la LOSNCP que podrían estar vulnerados (sin citar números de artículos específicos).",
+        "2. Describa los procedimientos de auditoría (pruebas) que aplicaría para confirmar los sobreprecios y el incumplimiento contractual.",
+        "3. ¿Qué tipo de responsabilidades podrían desprenderse de los hallazgos? Explique el mecanismo para trasladarlas a la Contraloría, citando solamente los principios generales de la Ley de la Contraloría."
+      ],
+      solucion: "Solución técnica:\n1. Se observa vulneración del principio de transparencia, igualdad y concurrencia, porque las cotizaciones no cumplían requisitos y posiblemente fueron direccionadas. El pago anticipado sin recepción total podría infringir el principio de eficiencia y legalidad. La LOSNCP establece que los procedimientos de menor cuantía deben asegurar la participación de oferentes calificados; en este caso, dos oferentes no calificados debieron ser descartados, lo que vicia el proceso.\n2. Pruebas: comparación de precios de mercado con cotizaciones reales (benchmarking); verificación de la documentación de los oferentes rechazados; inspección física del inventario para confirmar que solo una parte fue entregada; análisis de la orden de pago vs. acta de recepción definitiva; entrevista al administrador del contrato. Se elaborarían papeles de trabajo con índices y marcas.\n3. Podrían existir indicios de responsabilidad administrativa (por parte del funcionario que aprobó la adjudicación sin verificar requisitos), responsabilidad civil culposa (por el perjuicio económico del pago anticipado sin respaldo) e incluso indicios penales si se comprueba intención. Estos hallazgos se trasladarían en el informe de auditoría con la recomendación de iniciar las acciones correspondientes según la Ley de la Contraloría. El informe se presenta al delegado provincial de la Contraloría para su revisión y eventual determinación de responsabilidades."
+    }
+  };
+
+  const SAMPLE_CASE = {
+    enunciado: "Ejemplo de caso práctico (Contabilidad y Auditoría): La Policía Nacional ejecutó un proyecto de mejoramiento del sistema de videovigilancia en Quito por $150,000. El contrato fue adjudicado a una única empresa luego de un proceso de cotización. El auditor debe revisar la ejecución presupuestaria, la legalidad del proceso y la entrega efectiva.",
+    preguntas: [
+      "1. ¿Qué principios de la LOSNCP deben verificarse en este proceso de contratación? (evite mencionar números de artículos).",
+      "2. Mencione las pruebas de auditoría para confirmar que los equipos instalados corresponden al contrato y funcionan.",
+      "3. ¿Qué implicaciones tiene para el administrador del contrato si no se realizaron las pruebas de aceptación?"
+    ],
+    solucion: "Respuesta técnica resumida:\n1. Se verifican los principios de transparencia (publicidad de la convocatoria), concurrencia (participación de varios oferentes), igualdad (evaluación objetiva) y eficiencia (relación costo-beneficio). En este caso, un solo oferente podría indicar falta de concurrencia, por lo que se debe revisar si se cumplió con la difusión adecuada.\n2. Inspección física de los equipos y cotejo con las especificaciones técnicas del contrato; pruebas de funcionamiento con personal técnico; revisión de actas de entrega-recepción y conformidad; análisis de los pagos parciales vs. hitos de ejecución; verificación de garantías técnicas.\n3. Si no se realizaron pruebas, el administrador podría incurrir en responsabilidad administrativa por omisión del deber de custodia y supervisión. Además, si los equipos no operan, habría un perjuicio económico al Estado, lo que conlleva responsabilidad civil culposa. La Contraloría evaluaría la falta de control concurrente."
+  };
+
+  // ==================== ESTADO GLOBAL ====================
+  let currentUser = null;
+  let currentCase = null;
+  let modelAnswerVisible = false;
+
+  // ==================== FUNCIONES DE INTERFAZ ====================
+  function showAccessScreen() {
+    document.getElementById('accessScreen').style.display = 'flex';
+    document.getElementById('mainPanel').style.display = 'none';
+    document.getElementById('cedulaInput').value = '';
+    document.getElementById('carreraSelect').value = '';
+    document.getElementById('loginError').textContent = '';
+  }
+
+  function showMainPanel() {
+    document.getElementById('accessScreen').style.display = 'none';
+    document.getElementById('mainPanel').style.display = 'block';
+    document.getElementById('careerDisplay').textContent = currentUser.carrera;
+    document.getElementById('careerTemarioTitle').textContent = currentUser.carrera;
+    renderTemario();
+    resetCase();
+    document.getElementById('userAnswer').value = '';
+    document.getElementById('modelAnswerBox').style.display = 'none';
+    document.getElementById('feedbackBox').style.display = 'none';
+  }
+
+  function resetCase() {
+    currentCase = null;
+    document.getElementById('caseContent').innerHTML = 'Presione "Crear caso práctico" para comenzar.';
+    document.getElementById('modelAnswerBox').style.display = 'none';
+    document.getElementById('feedbackBox').style.display = 'none';
+  }
+
+  function login() {
+    const cedula = document.getElementById('cedulaInput').value.trim();
+    const carrera = document.getElementById('carreraSelect').value;
+    const errorDiv = document.getElementById('loginError');
+    errorDiv.textContent = '';
+    if (!cedula || !carrera) { errorDiv.textContent = 'Complete todos los campos.'; return; }
+    const found = ALLOWED_USERS.find(u => u.cedula === cedula && u.carrera === carrera);
+    if (found) { currentUser = found; showMainPanel(); }
+    else { errorDiv.textContent = 'Cédula o carrera no autorizada. Use credenciales de prueba: 1711111111, 1712222222 o 1710280942 para Contabilidad y Auditoría.'; }
+  }
+
+  function logout() { currentUser = null; showAccessScreen(); }
+
+  function renderTemario(filter = '') {
+    const container = document.getElementById('temarioContainer');
+    if (!currentUser) return;
+    const temas = TEMARIOS[currentUser.carrera] || [];
+    const filtered = temas.filter(t => t.toLowerCase().includes(filter.toLowerCase()));
+    container.innerHTML = filtered.map(t => `<div class="temario-item">${t}</div>`).join('');
+  }
+
+  function filterTemas() { const text = document.getElementById('searchTema').value; renderTemario(text); }
+
+  function loadCaseFromBank() {
+    if (!currentUser) return;
+    const bankCase = CASOS_BANK[currentUser.carrera];
+    if (!bankCase) { document.getElementById('caseContent').innerHTML = 'No hay caso precargado para esta carrera. Use "Nuevo caso con IA".'; return; }
+    currentCase = bankCase;
+    displayCase(bankCase);
+  }
+
+  function displayCase(caseObj) {
+    const html = `<p><strong>Contexto operacional:</strong></p><p>${caseObj.enunciado}</p><p><strong>Preguntas:</strong></p><ol>${caseObj.preguntas.map(p => `<li>${p}</li>`).join('')}</ol>`;
+    document.getElementById('caseContent').innerHTML = html;
+    document.getElementById('modelAnswerBox').style.display = 'none';
+    document.getElementById('feedbackBox').style.display = 'none';
+  }
+
+  function showModelAnswer() {
+    if (!currentCase) { alert('Primero debe crear un caso práctico.'); return; }
+    document.getElementById('modelAnswerContent').innerHTML = `<pre>${currentCase.solucion}</pre>`;
+    document.getElementById('modelAnswerBox').style.display = 'block';
+    document.getElementById('feedbackBox').style.display = 'none';
+    modelAnswerVisible = true;
+  }
+
+  // ==================== GENERACIÓN DE CASOS CON IA (ANTI-ALUCINACIONES) ====================
+  async function generateCaseWithAI() {
+    if (!currentUser) return;
+    document.getElementById('caseLoading').style.display = 'block';
+    try {
+      const temas = TEMARIOS[currentUser.carrera];
+      if (!temas || temas.length === 0) throw new Error('No hay temario para esta carrera.');
+      const indiceAleatorio = Math.floor(Math.random() * temas.length);
+      const temaSeleccionado = temas[indiceAleatorio];
+
+      const prompt = `Eres un experto evaluador de la Policía Nacional del Ecuador especializado en Contabilidad y Auditoría. Genera un caso práctico para un aspirante a especialista en Contabilidad y Auditoría. El caso debe centrarse EXCLUSIVAMENTE en el siguiente tema del temario:\n\n"${temaSeleccionado}"\n\nCombina la especialidad con doctrina policial (autogestión, transparencia, control interno) y administración pública ecuatoriana (LOSNCP, Ley de la Contraloría General del Estado, normativa de finanzas públicas). 
+
+      IMPORTANTE:
+      - NO generes preguntas que exijan citar montos exactos de dinero ni procedimientos de adquisición detallados; enfócate en el análisis contable, de auditoría y de control.
+      - NO inventes números de artículos de la LOSNCP, de la Ley de la Contraloría, de las NAG, de las NICSP ni de ninguna otra normativa. Si necesitas hacer referencia a una norma, indica cómo se aplicaría en la práctica, por ejemplo: "de acuerdo con los principios de la LOSNCP" o "según las Normas de Auditoría Gubernamental vigentes (consultar la normativa actualizada de la Contraloría)".
+      - No proporciones números de artículos a menos que estés absolutamente seguro de que existen y son correctos (si no, omítelos y describe la lógica).
+      - Enfatiza la doctrina policial de autogestión y transparencia en la gestión financiera.
+      - Si no recuerdas un dato exacto, di que se debe consultar la fuente oficial.
+
+      Proporciona un contexto operacional realista, 3 preguntas técnicas y la respuesta técnica detallada (máx. 500 palabras). Devuelve JSON con: "enunciado", "preguntas" (array de 3 strings), "solucion". Solo JSON.`;
+
+      const response = await callDeepSeek([
+        { role: 'system', content: 'Responde SOLO con un objeto JSON válido, sin texto adicional. No alucines números de leyes o normas. Si no sabes un número exacto, describe el procedimiento o di que debe consultarse la normativa vigente.' },
+        { role: 'user', content: prompt }
+      ], 0.5, 20000);
+
+      let jsonStr = response.trim();
+      const fenceMatch = jsonStr.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+      if (fenceMatch) jsonStr = fenceMatch[1].trim();
+      const firstBrace = jsonStr.indexOf('{');
+      if (firstBrace > 0) jsonStr = jsonStr.substring(firstBrace);
+
+      function sanitizeJSON(str) {
+        let result = '', inString = false, escaped = false;
+        for (let i = 0; i < str.length; i++) {
+          const c = str[i];
+          if (escaped) { result += c; escaped = false; continue; }
+          if (c === '\\' && inString) { escaped = true; result += c; continue; }
+          if (c === '"') { inString = !inString; result += c; continue; }
+          if (inString && c.charCodeAt(0) < 0x20) {
+            if (c === '\n') result += '\\n';
+            else if (c === '\r') result += '\\r';
+            else if (c === '\t') result += '\\t';
+            else result += '\\u' + ('000' + c.charCodeAt(0).toString(16)).slice(-4);
+          } else result += c;
+        }
+        return result;
+      }
+      jsonStr = sanitizeJSON(jsonStr);
+      const caseData = JSON.parse(jsonStr);
+      if (caseData.enunciado && caseData.preguntas && caseData.solucion) {
+        currentCase = caseData;
+        displayCase(caseData);
+      } else throw new Error('JSON inválido');
+    } catch (e) {
+      console.error(e);
+      document.getElementById('caseContent').innerHTML = `<p>Error al generar caso con IA. ${e.message}</p>`;
+      currentCase = null;
+    } finally {
+      document.getElementById('caseLoading').style.display = 'none';
+    }
+  }
+
+  // ==================== EVALUACIÓN DE RESPUESTA (ANTI-HALUCINACIONES) ====================
+  async function reviewMyAnswer() {
+    if (!currentCase) { alert('No hay caso práctico activo.'); return; }
+    const userText = document.getElementById('userAnswer').value.trim();
+    if (!userText) { alert('Escriba su respuesta antes de solicitar revisión.'); return; }
+    if (!modelAnswerVisible) { alert('Primero haga clic en "Ver respuesta técnica".'); return; }
+
+    document.getElementById('feedbackLoading').style.display = 'block';
+    document.getElementById('feedbackBox').style.display = 'none';
+    try {
+      const prompt = `Eres un instructor experto de la Policía Nacional en Contabilidad y Auditoría. Evalúa la respuesta del aspirante a especialista. 
+
+      Caso:
+      ${currentCase.enunciado}
+
+      Preguntas:
+      ${currentCase.preguntas.join('\n')}
+
+      Respuesta modelo (de referencia):
+      ${currentCase.solucion}
+
+      Respuesta del aspirante:
+      ${userText}
+
+      INSTRUCCIONES PARA LA EVALUACIÓN:
+      - Señala aciertos y errores concretos, con tono constructivo.
+      - Si el aspirante cita un número de artículo, norma INEN, NAG, LOSNCP o cualquier código que no existe o no corresponde, indícalo claramente y sugiere no inventar referencias.
+      - No inventes ni alucines tú tampoco números de leyes o normas. Si necesitas hacer referencia, usa frases como "de acuerdo con la LOSNCP vigente" o "según las Normas de Auditoría Gubernamental de la Contraloría".
+      - Sugiere temas a repasar basados en el temario oficial.
+      - Incorpora la doctrina policial (transparencia, autogestión, control interno) en la retroalimentación cuando sea relevante.
+      - Máximo 500 palabras.`;
+
+      const feedback = await callDeepSeek([
+        { role: 'system', content: 'Eres un instructor evaluador. No alucines números de leyes, artículos o normas. Si no conoces un número exacto, describe el principio. Sé constructivo y didáctico.' },
+        { role: 'user', content: prompt }
+      ], 0.7, 3000);
+      document.getElementById('feedbackContent').innerHTML = `<pre style="white-space: pre-wrap;">${feedback}</pre>`;
+      document.getElementById('feedbackBox').style.display = 'block';
+    } catch (e) {
+      document.getElementById('feedbackContent').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+      document.getElementById('feedbackBox').style.display = 'block';
+    } finally {
+      document.getElementById('feedbackLoading').style.display = 'none';
+    }
+  }
+
+  // ==================== CASO DE MUESTRA ====================
+  function showSampleCase() {
+    const modal = document.getElementById('sampleModal');
+    const contentDiv = document.getElementById('sampleCaseContent');
+    contentDiv.innerHTML = `<p><strong>📌 Contexto (Contabilidad y Auditoría - caso demostrativo):</strong></p><p>${SAMPLE_CASE.enunciado}</p><p><strong>❓ Preguntas técnicas:</strong></p><ol><li>${SAMPLE_CASE.preguntas.join('</li><li>')}</li></ol><p><strong>✅ Respuesta técnica modelo:</strong></p><pre>${SAMPLE_CASE.solucion}</pre><p style="margin-top:1rem;">*Este es un ejemplo de la calidad de los casos y la retroalimentación que recibirá al iniciar sesión.*</p>`;
+    modal.style.display = 'flex';
+  }
+
+  function closeSampleModal() { document.getElementById('sampleModal').style.display = 'none'; }
+
+  // ==================== LLAMADA A DEEPSEEK ====================
+  async function callDeepSeek(messages, temperature = 0.7, maxTokens = 2000) {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+      body: JSON.stringify({ model: MODEL, messages: messages, temperature: temperature, max_tokens: maxTokens })
+    });
+    if (!resp.ok) throw new Error(`API error ${resp.status}: ${await resp.text()}`);
+    const data = await resp.json();
+    return data.choices[0].message.content;
+  }
+
+  // ==================== EVENTOS GLOBALES ====================
+  window.onclick = function(event) { const modal = document.getElementById('sampleModal'); if (event.target === modal) modal.style.display = 'none'; };
+  showAccessScreen();
+</script>
+</body>
+</html>
