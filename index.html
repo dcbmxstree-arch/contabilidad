@@ -166,7 +166,11 @@
   // ==================== USUARIOS AUTORIZADOS (prueba) ====================
   const ALLOWED_USERS = [
     { cedula: '1711111111', carrera: 'Contabilidad y Auditoría' },
-    { cedula: '1712222222', carrera: 'Contabilidad y Auditoría' },
+    { cedula: '0928374651', carrera: 'Contabilidad y Auditoría' },
+    { cedula: '1309876542', carrera: 'Contabilidad y Auditoría' },
+    { cedula: '1804567892', carrera: 'Contabilidad y Auditoría' },
+    { cedula: '1456789123', carrera: 'Contabilidad y Auditoría' },
+    { cedula: '0955123478', carrera: 'Contabilidad y Auditoría' },
     { cedula: '1710280942', carrera: 'Contabilidad y Auditoría' }
   ];
 
@@ -448,7 +452,7 @@
   function closeSampleModal() { document.getElementById('sampleModal').style.display = 'none'; }
 
   // ==================== LLAMADA A DEEPSEEK ====================
-  async function callDeepSeek(messages, temperature = 0.7, maxTokens = 2000) {
+  async function callDeepSeek(messages, temperature = 0.7, maxTokens = 4000) {
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
